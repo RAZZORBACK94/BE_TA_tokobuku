@@ -1,52 +1,52 @@
-'use strict';
+"use strict";
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('bukus', {
-      id_buku: {
+    await queryInterface.createTable("bukus", {
+      id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       isbn: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       nama_buku: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       author_buku: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       penerbit_buku: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       kategori_buku: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       deskripsi_buku: {
-        type: Sequelize.TEXT
+        type: Sequelize.TEXT,
       },
       cover_buku: {
-        type: Sequelize.TEXT
+        type: Sequelize.TEXT,
       },
       stok_buku: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       harga_buku: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       createdAt: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       updatedAt: {
         allowNull: false,
-        type: Sequelize.DATE
-      }
+        type: Sequelize.DATE,
+      },
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('bukus');
-  }
+    await queryInterface.dropTable("bukus");
+  },
 };
