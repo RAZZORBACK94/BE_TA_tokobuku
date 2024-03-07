@@ -17,16 +17,16 @@ module.exports = {
           key: "id",
         },
       },
-      total_transaksi: {
-        type: Sequelize.INTEGER,
-      },
-      id_admin: {
+      id_buku: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "admins",
+          model: "bukus",
           key: "id",
         },
+      },
+      total_transaksi: {
+        type: Sequelize.INTEGER,
       },
       createdAt: {
         allowNull: false,

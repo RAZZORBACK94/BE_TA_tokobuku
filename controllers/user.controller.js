@@ -32,6 +32,7 @@ exports.findUser = async (request, response) => {
         { saldo_user: { [Op.substring]: keyword } },
         { username_user: { [Op.substring]: keyword } },
         { password_user: { [Op.substring]: keyword } },
+        { role_user: { [Op.substring]: keyword } },
       ],
     },
   });
@@ -54,6 +55,7 @@ exports.addUser = (request, response) => {
     saldo_user: request.body.saldo_user,
     username_user: request.body.username_user,
     password_user: md5(request.body.password_user),
+    role_user: request.body.role_user,
   };
   /** execute inserting data to user's table */
   userModel
@@ -85,6 +87,7 @@ exports.updateUser = (request, response) => {
     telepon_user: request.body.telepon_user,
     saldo_user: request.body.saldo_user,
     username_user: request.body.username_user,
+    role_user: request.body.role_user,
   };
   if (request.body.password_user) {
     dataUser.password_user = md5(request.body.password_user);
