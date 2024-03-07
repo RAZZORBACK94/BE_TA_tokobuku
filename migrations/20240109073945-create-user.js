@@ -13,7 +13,7 @@ module.exports = {
         type: Sequelize.STRING,
       },
       jk_user: {
-        type: Sequelize.ENUM("Laki-laki", "Perempuan"),
+        type: Sequelize.ENUM("Laki", "Perempuan"),
       },
       alamat_user: {
         type: Sequelize.TEXT,
@@ -29,6 +29,9 @@ module.exports = {
       },
       password_user: {
         type: Sequelize.STRING,
+      },
+      role_user: {
+        type: Sequelize.ENUM("admin", "pengguna"),
       },
       createdAt: {
         allowNull: false,
