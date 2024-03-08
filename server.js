@@ -24,6 +24,9 @@ app.use(`/buku`, bukuRoute);
 const auth = require("./routes/auth.route");
 app.use(`/auth`, auth);
 
+const keranjangRoute = require("./routes/keranjang.route");
+app.use("/keranjang", keranjangRoute);
+
 /** route to access uploaded file */
 app.use(express.static(__dirname));
 

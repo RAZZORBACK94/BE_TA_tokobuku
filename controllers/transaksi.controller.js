@@ -1,89 +1,74 @@
 const buku = require("../models/buku");
-const { request, response } = require("../routes/buku.route");
-
-const transaksiModel = require(`../models/index`).transaksi;
-const userModel = require("../models/index").user;
-const detailOfTransaksiModel = require(`../models/index`).detail_transaksi;
+const keranjang = require(`../models/index`).keranjang;
+const detailkeranjang = require(`../models/index`).detail_keranjang;
 
 const Op = require(`sequelize`).Op;
 
-exports.addTransaksi = async (request, response) => {
-  let newData = {
-    id_user: request.body.id_user,
-    id_buku: request.body.id_buku,
-    id_admin: request.body.id_admin,
-    qty_buku: request.body.qty_buku,
+exports.addtoKeranjang = async (request, response) => {
+  let keranjangData = {
+    id_user: request.user.id_user,
+    status: "didraft",
   };
+  const cekKeranjang = await keranjang.findOne({
+    where: { id_user: keranjangData.id_user, status: "didraft" },
+  });
+  const bukuData = await buku.findOne({
+    where: { id: request.body.id_buku },
+  });
 
-  const total_transaksi = id_buku.harga * qty_buku;
-  if (id_user.saldo && total_transaksi) {
-    //
-    let dataBaru = id_user.saldo - total_transaksi;
+  if (!cekKeranjang) {
+    const id_keranjang = cekKeranjang.id;
 
-    userModel.update(dataBaru, { where: { id: id } }).then((result) => {
-      /** if update's process success */
-      return response.json({
-        success: true,
+    const cekKeranjangItem = await detailkeranjang.findOne({ where: { id_keranjang: id_keranjang, id_buku: request.body.id_buku } });
 
-        message: `Data user has been updated`,
-      });
+    if (cekKeranjangItem) {
+      const hargaAkhir = request.body.qty * bukuData.harga_buku;
+
+      await detailkeranjang.update(
+        {
+          qty: request.body.qty,
+          total: hargaAkhir,
+        },
+        {
+          where: {
+            id_keranjang: id_keranjang,
+            id_buku: request.body.id_buku,
+          },
+        }
+      );
+    } else {
+      const detailBeli = {
+        id_buku: request.body.id_buku,
+        qty: request.body.qty,
+        total: request.body.qty * bukuData.harga,
+        id_keranjang: id_keranjang,
+      };
+      await detailkeranjang.create(detailBeli);
+    }
+  } else {
+    const akhir = await keranjang.create(keranjangData);
+    const id_keranjang = result.id;
+
+    const bukuData = await buku.findOne({
+      where: {
+        id: request.body.id_buku,
+      },
     });
+    const detailBeli = {
+      id_buku: request.body.id_buku,
+      qty: request.body.qty,
+      total: request.body.qty * bukuData.harga,
+      id_keranjang: id_keranjang,
+    };
+    await detailkeranjang.create(detailBeli);
   }
-
-  transaksiModel.create(newData).then((result) => {
-    return response
-      .json({
-        success: true,
-        data: result,
-        message: "transaksi berhasil",
-      })
-      .catch((error) => {
-        return response.json({
-          success: false,
-          message: error.message,
-        });
-      });
+  await exports.hitungAkhir(response, request.user.id);
+  return response.json({
+    success: true,
+    message: " keranjang baru dan buku telah masuk di keranjang",
   });
 };
 
-exports.updateTransaksi = async (request, response) => {
-  let data = {
-    id_user: request.body.id_user,
-    id_buku: request.body.id_buku,
-    id_admin: request.body.id_admin,
-    total_transaksi: request.body.total_transaksi,
-  };
-  transaksiModel
-    .update(data, { where: { id: id } })
-    .then((result) => {
-      return response.json({
-        success: true,
-        message: "data transaksi update",
-      });
-    })
-    .catch((error) => {
-      return response.json({
-        success: false,
-        message: error.message,
-      });
-    });
-};
+exports.updateTransaksi = async (request, response) => {};
 
-exports.deleteTransaksi = (request, response) => {
-  let id = request.params.id;
-
-  transaksiModel
-    .destroy({ where: { id: id } })
-    .then((result) => {
-      return response.json({
-        success: true,
-        message: "transaksi  dihapus",
-      });
-    })
-    .catch((error) => {
-      return response.json({
-        success: false,
-        message: error.message,
-      });
-    });
-};
+exports.deleteTransaksi = (request, response) => {};
