@@ -6,7 +6,8 @@ const userModel = require("../models/index").user;
 
 const secret = "moklet";
 
-exports.authenticate = async (request, response) => {
+const authenticate = async (request, response) => {
+  // login
   let dataLogin = {
     username_user: request.body.username_user,
     password_user: md5(request.body.password_user),
@@ -36,19 +37,25 @@ exports.authenticate = async (request, response) => {
   });
 };
 
-exports.authorize = (request, response, next) => {
+//Done no Error
+const authorize = (request, response, next) => {
   const authHeader = request.headers.authorization;
 
   if (authHeader) {
-    const token = authHeader.split("")[1];
-
-    let verivedUser = jwt.verify(token, secret);
-
-    if (!verivedUser) {
-      return response.json({
-        success: false,
-        auth: false,
-        message: "User Unauthorize",
+    const token = authHeader.split(" ")[1];
+    let verivedUser;
+    try {
+      verivedUser = jwt.verify(token, secret);
+    } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        return response.status(400).json({
+          message: "token expired",
+          err: error,
+        });
+      }
+      return response.status(400).json({
+        message: "Auth Invalid",
+        err: error,
       });
     }
     request.user = verivedUser;
@@ -61,3 +68,5 @@ exports.authorize = (request, response, next) => {
     });
   }
 };
+
+module.exports = { authorize, authenticate };

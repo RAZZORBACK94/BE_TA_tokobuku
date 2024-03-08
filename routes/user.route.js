@@ -10,7 +10,7 @@ const userController = require(`../controllers/user.controller`);
 
 const { validateUser } = require("../middleware/user-validation");
 
-const { authorize } = require("../controllers/auth.controller");
+const { authorize, authenticate } = require("../controllers/auth.controller");
 
 const { IsUser, IsAdmin } = require("../middleware/role-validation");
 
@@ -31,6 +31,10 @@ app.put("/update/:id", authorize, IsUser, validateUser, userController.updateUse
 /** create route to delete user
  * using method "DELETE" and define parameter for "id" */
 app.delete("/delete/:id", authorize, IsAdmin, userController.deleteUser);
+
+app.post("/register", validateUser, userController.register);
+
+app.post("/reset/:id", userController.resetPW);
 
 /** export app in order to load in another file */
 module.exports = app;

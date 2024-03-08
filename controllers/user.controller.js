@@ -1,6 +1,9 @@
 /** load model for `users` table */
 const userModel = require(`../models/index`).user;
 const md5 = require(`md5`);
+
+const bycrpt = require("bcrypt");
+
 /** load Operation from Sequelize */
 const Op = require(`sequelize`).Op;
 
@@ -41,6 +44,38 @@ exports.findUser = async (request, response) => {
     data: users,
     message: `All Users have been loaded`,
   });
+};
+
+exports.register = async (request, response) => {
+  const defaultRole = "pengguna";
+  const defaultSaldo = 0;
+
+  let newUser = {
+    id: request.body.id,
+    nama_user: request.body.nama_user,
+    jk_user: request.body.jk_user,
+    alamat_user: request.body.alamat_user,
+    telepon_user: request.body.telepon_user,
+    saldo_user: defaultSaldo,
+    username_user: request.body.username_user,
+    password_user: md5(request.body.password_user),
+    role_user: request.body.role_user || defaultRole,
+  };
+  userModel
+    .create(newUser)
+    .then((result) => {
+      return response.json({
+        success: true,
+        data: newUser,
+        message: `New user has been inserted`,
+      });
+    })
+    .catch((error) => {
+      return response.json({
+        success: false,
+        message: error.message,
+      });
+    });
 };
 
 /** create function for add new user */
@@ -134,4 +169,29 @@ exports.deleteUser = (request, response) => {
         message: error.message,
       });
     });
+};
+
+// error  data must be a string or Buffer and salt must either be a salt string
+exports.resetPW = async (request, response) => {
+  try {
+    let id = request.params.id;
+    const saltRounds = 10;
+
+    let users = await userModel.findOne({ where: { id: id } });
+
+    if (!users) {
+      return response.status(404).json({ error: "User not found" });
+    }
+
+    const password_user = md5(request.body.password_user);
+    //eror disini tidak mau ke update
+    userModel.update(password_user, { where: { id: id } });
+
+    response.status(200).json({ message: "password reset sukses" });
+  } catch (error) {
+    return response.json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
