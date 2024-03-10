@@ -171,7 +171,7 @@ exports.deleteUser = (request, response) => {
     });
 };
 
-// error  data must be a string or Buffer and salt must either be a salt string
+// error done
 exports.resetPW = async (request, response) => {
   try {
     let id = request.params.id;
@@ -183,9 +183,8 @@ exports.resetPW = async (request, response) => {
       return response.status(404).json({ error: "User not found" });
     }
 
-    const password_user = md5(request.body.password_user);
-    //eror disini tidak mau ke update
-    userModel.update(password_user, { where: { id: id } });
+    const newPass = bycrpt.hashSync(request.body.password_user, saltRounds);
+    userModel.update({ password_user: newPass }, { where: { id: id } });
 
     response.status(200).json({ message: "password reset sukses" });
   } catch (error) {
