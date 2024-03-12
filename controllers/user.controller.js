@@ -175,7 +175,6 @@ exports.deleteUser = (request, response) => {
 exports.resetPW = async (request, response) => {
   try {
     let id = request.params.id;
-    const saltRounds = 10;
 
     let users = await userModel.findOne({ where: { id: id } });
 
@@ -183,7 +182,7 @@ exports.resetPW = async (request, response) => {
       return response.status(404).json({ error: "User not found" });
     }
 
-    const newPass = bycrpt.hashSync(request.body.password_user, saltRounds);
+    const newPass = md5(request.body.password_user);
     userModel.update({ password_user: newPass }, { where: { id: id } });
 
     response.status(200).json({ message: "password reset sukses" });
