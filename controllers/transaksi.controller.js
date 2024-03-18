@@ -71,4 +71,4 @@ exports.addtoKeranjang = async (request, response) => {
 
 exports.updateTransaksi = async (request, response) => {};
 
-exports.deleteTransaksi = (request, response) => {};
+exports.deleteTransaksi = async (request, response) => {};
