@@ -169,6 +169,7 @@ exports.deleteUser = (request, response) => {
 exports.resetPW = async (request, response) => {
   try {
     let id = request.params.id;
+    let username_user = request.body.username_user;
 
     let users = await userModel.findOne({ where: { id: id } });
 
