@@ -17,7 +17,6 @@ module.exports = (sequelize, DataTypes) => {
       jk_user: DataTypes.ENUM("Laki", "Perempuan"),
       alamat_user: DataTypes.TEXT,
       telepon_user: DataTypes.STRING,
-      saldo_user: DataTypes.INTEGER,
       username_user: DataTypes.STRING,
       password_user: DataTypes.STRING,
       role_user: DataTypes.ENUM("admin", "Pengguna"),

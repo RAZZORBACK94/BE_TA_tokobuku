@@ -21,9 +21,6 @@ module.exports = {
       telepon_user: {
         type: Sequelize.STRING,
       },
-      saldo_user: {
-        type: Sequelize.INTEGER,
-      },
       username_user: {
         type: Sequelize.STRING,
       },

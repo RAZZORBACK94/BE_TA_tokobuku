@@ -2,8 +2,6 @@
 const userModel = require(`../models/index`).user;
 const md5 = require(`md5`);
 
-const bycrpt = require("bcrypt");
-
 /** load Operation from Sequelize */
 const Op = require(`sequelize`).Op;
 
@@ -32,7 +30,6 @@ exports.findUser = async (request, response) => {
         { jk_user: { [Op.substring]: keyword } },
         { alamat_user: { [Op.substring]: keyword } },
         { telepon_user: { [Op.substring]: keyword } },
-        { saldo_user: { [Op.substring]: keyword } },
         { username_user: { [Op.substring]: keyword } },
         { password_user: { [Op.substring]: keyword } },
         { role_user: { [Op.substring]: keyword } },
@@ -56,7 +53,6 @@ exports.register = async (request, response) => {
     jk_user: request.body.jk_user,
     alamat_user: request.body.alamat_user,
     telepon_user: request.body.telepon_user,
-    saldo_user: defaultSaldo,
     username_user: request.body.username_user,
     password_user: md5(request.body.password_user),
     role_user: request.body.role_user || defaultRole,
@@ -87,7 +83,6 @@ exports.addUser = (request, response) => {
     jk_user: request.body.jk_user,
     alamat_user: request.body.alamat_user,
     telepon_user: request.body.telepon_user,
-    saldo_user: request.body.saldo_user,
     username_user: request.body.username_user,
     password_user: md5(request.body.password_user),
     role_user: request.body.role_user,
@@ -120,7 +115,6 @@ exports.updateUser = (request, response) => {
     jk_user: request.body.jk_user,
     alamat_user: request.body.alamat_user,
     telepon_user: request.body.telepon_user,
-    saldo_user: request.body.saldo_user,
     username_user: request.body.username_user,
     role_user: request.body.role_user,
   };
