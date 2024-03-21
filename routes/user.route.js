@@ -10,7 +10,7 @@ const userController = require(`../controllers/user.controller`);
 
 const { validateUser } = require("../middleware/user-validation");
 
-const { authorize, authenticate } = require("../controllers/auth.controller");
+const { authorize, authenticate, authlog } = require("../controllers/auth.controller");
 
 const { IsUser, IsAdmin } = require("../middleware/role-validation");
 
@@ -35,6 +35,8 @@ app.delete("/delete/:id", authorize, IsAdmin, userController.deleteUser);
 app.post("/register", validateUser, userController.register);
 
 app.post("/reset/:id", userController.resetPW);
+
+app.post("/logout/:id", authlog, userController.logout);
 
 /** export app in order to load in another file */
 module.exports = app;

@@ -187,3 +187,14 @@ exports.resetPW = async (request, response) => {
     });
   }
 };
+
+exports.logout = async (request, response) => {
+  try {
+    console.log("logout ");
+  } catch (error) {
+    return response.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

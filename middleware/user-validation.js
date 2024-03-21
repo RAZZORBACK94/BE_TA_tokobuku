@@ -5,7 +5,6 @@ const validateUser = [
   body("jk_user").notEmpty().withMessage("jenis kelamin tidak boleh kosong"),
   body("alamat_user").notEmpty().withMessage("alamat tidak boleh kosong"),
   body("telepon_user").notEmpty().withMessage("telepon tidak boleh kosong"),
-  body("saldo_user").notEmpty().withMessage("saldo tidak boleh kosong"),
   body("username_user").notEmpty().withMessage("username tidak boleh kosong"),
   body("password_user").notEmpty().withMessage("password tidak boleh kosong"),
 
