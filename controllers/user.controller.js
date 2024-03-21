@@ -169,7 +169,6 @@ exports.deleteUser = (request, response) => {
 exports.resetPW = async (request, response) => {
   try {
     let id = request.params.id;
-    let username_user = request.body.username_user;
 
     let users = await userModel.findOne({ where: { id: id } });
 
@@ -181,6 +180,17 @@ exports.resetPW = async (request, response) => {
     userModel.update({ password_user: newPass }, { where: { id: id } });
 
     response.status(200).json({ message: "password reset sukses" });
+  } catch (error) {
+    return response.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+exports.logout = async (request, response) => {
+  try {
+    console.log("logout ");
   } catch (error) {
     return response.json({
       success: false,

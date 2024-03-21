@@ -23,7 +23,7 @@ exports.findBuku = async (request, response) => {
   let keyword = request.params.key;
   /** call findAll() within where clause and operation
    * to find data based on keyword */
-  let events = await bukuModel.findAll({
+  let bukus = await bukuModel.findAll({
     where: {
       [Op.or]: [
         { isbn: { [Op.substring]: keyword } },

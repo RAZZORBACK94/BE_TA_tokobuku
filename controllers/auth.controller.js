@@ -14,8 +14,6 @@ const authenticate = async (request, response) => {
   };
   let dataUser = await userModel.findOne({ where: dataLogin });
 
-  console.log(dataUser);
-
   if (dataUser) {
     let payload = JSON.stringify(dataUser);
     console.log(payload);
@@ -69,4 +67,16 @@ const authorize = (request, response, next) => {
   }
 };
 
-module.exports = { authorize, authenticate };
+const authlog = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  if (token == null) return res.sendStatus(401);
+
+  jwt.verify(token, secret, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
+};
+
+module.exports = { authorize, authenticate, authlog };
