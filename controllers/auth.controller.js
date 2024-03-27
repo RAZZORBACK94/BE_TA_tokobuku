@@ -62,7 +62,7 @@ const authorize = (request, response, next) => {
     return response.json({
       success: false,
       auth: false,
-      message: "USer Unauthorize",
+      message: "User Unauthorize",
     });
   }
 };
