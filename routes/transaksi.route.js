@@ -6,10 +6,12 @@ app.use(express.json());
 
 const TransaksiController = require("../controllers/transaksi.controller");
 
-app.post("/add", TransaksiController.addtoKeranjang);
+const { authorize, authenticate, authlog } = require("../controllers/auth.controller");
 
-app.post("/remove/:id", TransaksiController.removeproduct);
+app.post("/add", authorize, TransaksiController.addtoKeranjang);
 
-app.post("/checkout", TransaksiController.checkout);
+app.post("/remove/:id", authorize, TransaksiController.removeproduct);
+
+app.post("/checkout", authorize, TransaksiController.checkout);
 
 module.exports = app;

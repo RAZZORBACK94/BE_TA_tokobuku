@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   detail_keranjang.init(
     {
-      id_transaksi: DataTypes.INTEGER,
+      id_keranjang: DataTypes.INTEGER,
       id_buku: DataTypes.INTEGER,
       qty: DataTypes.INTEGER,
       total: DataTypes.INTEGER,

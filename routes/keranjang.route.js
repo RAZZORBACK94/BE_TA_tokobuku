@@ -6,6 +6,8 @@ app.use(express.json());
 
 const keranjangController = require(`../controllers/keranjang.controllers`);
 
-app.get("/getKeranjang/:id", keranjangController.getKeranjang);
+const { authorize, authenticate, authlog } = require("../controllers/auth.controller");
+
+app.get("/getKeranjang", authorize, keranjangController.getKeranjang);
 
 module.exports = app;

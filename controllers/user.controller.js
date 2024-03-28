@@ -45,7 +45,6 @@ exports.findUser = async (request, response) => {
 
 exports.register = async (request, response) => {
   const defaultRole = "pengguna";
-  const defaultSaldo = 0;
 
   let newUser = {
     id: request.body.id,
