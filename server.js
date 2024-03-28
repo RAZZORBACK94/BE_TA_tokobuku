@@ -27,6 +27,9 @@ app.use(`/auth`, auth);
 const keranjangRoute = require("./routes/keranjang.route");
 app.use("/keranjang", keranjangRoute);
 
+const TransactionRoute = require("./routes/transaksi.route");
+app.use("/transaksi", TransactionRoute);
+
 /** route to access uploaded file */
 app.use(express.static(__dirname));
 
