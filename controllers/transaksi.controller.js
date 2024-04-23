@@ -1,8 +1,9 @@
-const { Transaction } = require("sequelize");
+const { Transaction, where } = require("sequelize");
 const user = require("../models/index").user;
 const buku = require("../models/index").buku;
 const keranjang = require(`../models/index`).keranjang;
 const detailkeranjang = require(`../models/index`).detail_keranjang;
+const midCli = require("midtrans-client");
 
 const Op = require(`sequelize`).Op;
 
@@ -19,7 +20,6 @@ exports.addtoKeranjang = async (request, response) => {
   const bukuData = await buku.findOne({
     where: { id: request.body.id_buku },
   });
-  console.log(bukuData.id);
 
   if (!cekKeranjang) {
     const akhir = await keranjang.create(keranjangData);
@@ -31,7 +31,6 @@ exports.addtoKeranjang = async (request, response) => {
       },
     });
 
-    console.log(bukuData.id);
     const detailBeli = {
       id_keranjang: id_keranjang,
       id_buku: request.body.id_buku,
@@ -151,29 +150,64 @@ exports.checkout = async (request, response) => {
     where: { id_user: iduser, status: "didraft" },
   });
 
+  const detailker = await detailkeranjang.findOne({
+    where: { id_keranjang: keranjangUser.id },
+  });
+
+  const bukuda = await buku.findOne({
+    where: { id: detailker.id_buku },
+  });
+
   if (!keranjangUser) {
     return response.json({
       success: false,
       message: "cart not found",
     });
+  } else {
+    const snap = new midCli.Snap({
+      isProduction: false,
+      serverKey: "SB-Mid-server-bIfVZE_zjyx3IYHTHzji5NEQ",
+      clientKey: "SB-Mid-client-OI2y6xAq4D-Dwx5i",
+    });
+
+    const total = parseInt(keranjangUser.total_transaksi);
+
+    const idstrng = parseInt(keranjangUser.id);
+
+    //paymentgateway
+    const parameters = {
+      transaction_details: {
+        order_id: `INV-${Math.random()}`,
+        gross_amount: total,
+      },
+      callbacks: {
+        success: "https://localhost:3000",
+        pending: "https://localhost:3000/pending",
+        failure: "",
+      },
+    };
+
+    // console.log(snap);
+    let transactionToken;
+    let transactionUrl;
+    snap.createTransaction(parameters).then((transaction) => {
+      transactionToken = transaction.token;
+      transactionUrl = transaction.redirect_url;
+
+      return response.json({
+        success: true,
+        token: transactionToken,
+        redirect_url: transactionUrl,
+        message: "checkout berhasil",
+      });
+    });
+
+    const upQty = bukuda.stok_buku - detailker.qty;
+
+    await buku.update({ stok_buku: upQty }, { where: { id: detailker.id } });
+
+    // await detailkeranjang.findOne({ where: { id_keranjang: keranjangUser.id } });
+
+    await keranjang.update({ status: "dibayar" }, { where: { id_user: iduser, status: "didraft" } });
   }
-
-  await keranjang.update({ status: "dibayar" }, { where: { id_user: iduser, status: "didraft" } });
-
-  console.log(keranjangUser.id);
-
-  //var check undefined
-  const checks = true || 1;
-  await detailkeranjang.update({ check: checks }, { where: { id_keranjang: keranjangUser.id } });
-
-  return response.json({
-    success: true,
-    data: keranjangUser.id,
-    message: "checkout berhasil",
-  });
-};
-
-exports.payment = async (request, response) => {
-  try {
-  } catch (error) {}
 };

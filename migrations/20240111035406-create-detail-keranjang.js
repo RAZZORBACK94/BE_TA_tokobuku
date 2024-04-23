@@ -34,9 +34,6 @@ module.exports = {
       total: {
         type: Sequelize.INTEGER,
       },
-      check: {
-        type: Sequelize.BOOLEAN,
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
