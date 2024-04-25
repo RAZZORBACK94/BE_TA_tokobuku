@@ -1,6 +1,7 @@
 /** load model for `users` table */
 const userModel = require(`../models/index`).user;
 const md5 = require(`md5`);
+const { where } = require("sequelize");
 
 /** load Operation from Sequelize */
 const Op = require(`sequelize`).Op;
@@ -44,33 +45,46 @@ exports.findUser = async (request, response) => {
 };
 
 exports.register = async (request, response) => {
-  const defaultRole = "pengguna";
+  let username = request.body.username_user;
 
-  let newUser = {
-    id: request.body.id,
-    nama_user: request.body.nama_user,
-    jk_user: request.body.jk_user,
-    alamat_user: request.body.alamat_user,
-    telepon_user: request.body.telepon_user,
-    username_user: request.body.username_user,
-    password_user: md5(request.body.password_user),
-    role_user: request.body.role_user || defaultRole,
-  };
-  userModel
-    .create(newUser)
-    .then((result) => {
-      return response.json({
-        success: true,
-        data: newUser,
-        message: `New user has been inserted`,
+  let userCheck = await userModel.findOne({
+    where: { username_user: username },
+  });
+
+  if (!userCheck) {
+    const defaultRole = "pengguna";
+
+    let newUser = {
+      id: request.body.id,
+      nama_user: request.body.nama_user,
+      jk_user: request.body.jk_user,
+      alamat_user: request.body.alamat_user,
+      telepon_user: request.body.telepon_user,
+      username_user: request.body.username_user,
+      password_user: md5(request.body.password_user),
+      role_user: request.body.role_user || defaultRole,
+    };
+    userModel
+      .create(newUser)
+      .then((result) => {
+        return response.json({
+          success: true,
+          data: newUser,
+          message: `New user has been inserted`,
+        });
+      })
+      .catch((error) => {
+        return response.json({
+          success: false,
+          message: error.message,
+        });
       });
-    })
-    .catch((error) => {
-      return response.json({
-        success: false,
-        message: error.message,
-      });
+  } else {
+    return response.json({
+      success: false,
+      message: "username telah dipakai",
     });
+  }
 };
 
 /** create function for add new user */

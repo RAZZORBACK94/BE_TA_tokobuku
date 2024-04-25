@@ -10,11 +10,11 @@ const Op = require(`sequelize`).Op;
 exports.addtoKeranjang = async (request, response) => {
   let keranjangData = {
     id_user: request.user.id,
-    status: "didraft",
+    status: "pending",
   };
   console.log(keranjangData.id);
   const cekKeranjang = await keranjang.findOne({
-    where: { id_user: keranjangData.id_user, status: "didraft" },
+    where: { id_user: keranjangData.id_user, status: "pending" },
   });
   console.log(cekKeranjang);
   const bukuData = await buku.findOne({
@@ -92,10 +92,8 @@ exports.addtoKeranjang = async (request, response) => {
 
 exports.hitungAkhir = async (response, id) => {
   const userKeranjang = await keranjang.findOne({
-    where: { id_user: id, status: "didraft" },
+    where: { id_user: id, status: "pending" },
   });
-
-  console.log(userKeranjang.id);
 
   const id_keranjang = userKeranjang.id;
   if (!id_keranjang) {
@@ -116,7 +114,7 @@ exports.removeproduct = async (request, response) => {
   const id = request.params.id;
   try {
     const userCart = await keranjang.findOne({
-      where: { id_user: request.user.id, status: "didraft" },
+      where: { id_user: request.user.id, status: "pending" },
     });
     console.log(userCart.id);
     const isDeleted = await detailkeranjang.destroy({
@@ -147,7 +145,7 @@ exports.checkout = async (request, response) => {
   const iduser = request.user.id;
 
   const keranjangUser = await keranjang.findOne({
-    where: { id_user: iduser, status: "didraft" },
+    where: { id_user: iduser, status: "pending" },
   });
 
   const detailker = await detailkeranjang.findOne({
@@ -172,12 +170,12 @@ exports.checkout = async (request, response) => {
 
     const total = parseInt(keranjangUser.total_transaksi);
 
-    const idstrng = parseInt(keranjangUser.id);
+    const random = Math.random(10);
 
     //paymentgateway
     const parameters = {
       transaction_details: {
-        order_id: `INV-${Math.random()}`,
+        order_id: `INV-${random}`,
         gross_amount: total,
       },
       callbacks: {
@@ -203,11 +201,20 @@ exports.checkout = async (request, response) => {
     });
 
     const upQty = bukuda.stok_buku - detailker.qty;
-
     await buku.update({ stok_buku: upQty }, { where: { id: detailker.id } });
+    await keranjang.update({ status: "paid" }, { where: { id_user: iduser, status: "pending" } });
 
     // await detailkeranjang.findOne({ where: { id_keranjang: keranjangUser.id } });
-
-    await keranjang.update({ status: "dibayar" }, { where: { id_user: iduser, status: "didraft" } });
   }
+};
+
+const updateStatusMidtrans = async (order_id, data) => {};
+
+exports.notif = async (request, response) => {
+  const data = request.body;
+
+  response.json({
+    status: "success",
+    message: "OK",
+  });
 };

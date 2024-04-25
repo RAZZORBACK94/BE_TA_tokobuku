@@ -14,4 +14,6 @@ app.post("/remove/:id", authorize, TransaksiController.removeproduct);
 
 app.post("/checkout", authorize, TransaksiController.checkout);
 
+app.post("/notification", TransaksiController.notif);
+
 module.exports = app;

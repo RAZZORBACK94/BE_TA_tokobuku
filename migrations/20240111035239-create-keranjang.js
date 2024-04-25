@@ -21,7 +21,7 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       status: {
-        type: Sequelize.ENUM("dibayar", "didraft"),
+        type: Sequelize.ENUM("pending", "paid", "cancel"),
       },
       createdAt: {
         allowNull: false,

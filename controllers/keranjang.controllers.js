@@ -4,7 +4,7 @@ const Op = require("sequelize").Op;
 
 exports.getKeranjang = async (request, response) => {
   const userKeranjang = await keranjang.findOne({
-    where: { status: "didraft" },
+    where: { status: "pending" },
   });
 
   if (!userKeranjang) {

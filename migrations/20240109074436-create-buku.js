@@ -28,7 +28,7 @@ module.exports = {
         type: Sequelize.TEXT,
       },
       cover_buku: {
-        type: Sequelize.TEXT,
+        type: Sequelize.BLOB,
       },
       stok_buku: {
         type: Sequelize.INTEGER,
