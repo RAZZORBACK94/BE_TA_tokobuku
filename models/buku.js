@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
       nama_buku: DataTypes.STRING,
       author_buku: DataTypes.STRING,
       penerbit_buku: DataTypes.STRING,
-      kategori_buku: DataTypes.STRING,
+      kategori_buku: DataTypes.ENUM("agama", "pelajaran", "aktivitas", "fiksi", "Game"),
       deskripsi_buku: DataTypes.TEXT,
       cover_buku: DataTypes.BLOB,
       stok_buku: DataTypes.INTEGER,

@@ -22,7 +22,7 @@ module.exports = {
         type: Sequelize.STRING,
       },
       kategori_buku: {
-        type: Sequelize.STRING,
+        type: Sequelize.ENUM("agama", "pelajaran", "aktivitas", "fiksi", "Game"),
       },
       deskripsi_buku: {
         type: Sequelize.TEXT,
