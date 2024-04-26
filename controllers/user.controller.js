@@ -181,16 +181,16 @@ exports.deleteUser = (request, response) => {
 // error done
 exports.resetPW = async (request, response) => {
   try {
-    let id = request.params.id;
+    let username = request.body.username;
 
-    let users = await userModel.findOne({ where: { id: id } });
+    let users = await userModel.findOne({ where: { username_user: username } });
 
     if (!users) {
       return response.status(404).json({ error: "User not found" });
     }
 
     const newPass = md5(request.body.password_user);
-    userModel.update({ password_user: newPass }, { where: { id: id } });
+    userModel.update({ password_user: newPass }, { where: { username_user: username } });
 
     response.status(200).json({ message: "password reset sukses" });
   } catch (error) {

@@ -34,7 +34,7 @@ app.delete("/delete/:id", authorize, IsAdmin, userController.deleteUser);
 
 app.post("/register", validateUser, userController.register);
 
-app.post("/reset/:id", userController.resetPW);
+app.post("/reset", userController.resetPW);
 
 app.post("/logout/:id", authlog, userController.logout);
 
