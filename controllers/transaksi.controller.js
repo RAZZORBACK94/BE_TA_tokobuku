@@ -217,23 +217,35 @@ exports.checkout = async (request, response) => {
 
     // built SNAP
 
-    let transactionToken;
-    let transactionUrl;
-    snap.createTransaction(parameters).then((transaction) => {
-      transactionToken = transaction.token;
-      transactionUrl = transaction.redirect_url;
-
-      return response.json({
-        success: true,
-        token: transactionToken,
-        redirect_url: transactionUrl,
-        message: "checkout berhasil",
-      });
-      // updateStatusMidtrans(order_id);
-    });
     const upQty = bukuda.stok_buku - detailker.qty;
-    await buku.update({ stok_buku: upQty }, { where: { id: detailker.id } });
-    await keranjang.update({ status: "paid" }, { where: { id_user: iduser, status: "pending" } });
+
+    console.log(upQty);
+
+    if (upQty < 0) {
+      console.log("stok habis");
+      await keranjang.update({ status: "cancel" }, { where: { id_user: iduser, status: "pending" } });
+      return response.json({
+        success: false,
+        message: "stok habis",
+      });
+    } else {
+      let transactionToken;
+      let transactionUrl;
+      snap.createTransaction(parameters).then((transaction) => {
+        transactionToken = transaction.token;
+        transactionUrl = transaction.redirect_url;
+
+        return response.json({
+          success: true,
+          token: transactionToken,
+          redirect_url: transactionUrl,
+          message: "checkout berhasil",
+        });
+        // updateStatusMidtrans(order_id);
+      });
+      await buku.update({ stok_buku: upQty }, { where: { id: detailker.id_buku } });
+      await keranjang.update({ status: "paid" }, { where: { id_user: iduser, status: "pending" } });
+    }
 
     // const upQty = bukuda.stok_buku - detailker.qty;
     // await buku.update({ stok_buku: upQty }, { where: { id: detailker.id } });
