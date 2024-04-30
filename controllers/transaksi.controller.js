@@ -1,5 +1,5 @@
 const { Transaction, where, or } = require("sequelize");
-const user = require("../models/index").user;
+const users = require("../models/index").user;
 const buku = require("../models/index").buku;
 const keranjang = require(`../models/index`).keranjang;
 const detailkeranjang = require(`../models/index`).detail_keranjang;
@@ -163,6 +163,10 @@ exports.checkout = async (request, response) => {
     where: { id_keranjang: keranjangUser.id },
   });
 
+  const user = await users.findOne({
+    where: { id: iduser },
+  });
+
   const bukuda = await buku.findOne({
     where: { id: detailker.id_buku },
   });
@@ -189,16 +193,30 @@ exports.checkout = async (request, response) => {
         order_id: order_id,
         gross_amount: total,
       },
-      callbacks: {
-        success: "https://localhost:3000",
-        pending: "https://localhost:3000/pending",
-        failure: "https://localhost:3000/keranjang",
+      item_details: {
+        name: bukuda.nama_buku,
+        price: bukuda.harga_buku,
+        quantity: detailker.qty,
+      },
+      customer_details: {
+        first_name: user.nama_user,
+        address: user.alamat_user,
+        phone: user.telepon_user,
+        billing_address: {
+          first_name: user.nama_user,
+          address: user.alamat_user,
+          country_code: "IDN",
+        },
       },
     };
 
-    console.log(parameters.transaction_details.order_id);
+    // console.log(parameters.customer_details);
+    // console.log(parameters.item_details);
+
+    // console.log(parameters.transaction_details.order_id);
 
     // built SNAP
+
     let transactionToken;
     let transactionUrl;
     snap.createTransaction(parameters).then((transaction) => {
@@ -213,65 +231,62 @@ exports.checkout = async (request, response) => {
       });
       // updateStatusMidtrans(order_id);
     });
-
     const upQty = bukuda.stok_buku - detailker.qty;
     await buku.update({ stok_buku: upQty }, { where: { id: detailker.id } });
     await keranjang.update({ status: "paid" }, { where: { id_user: iduser, status: "pending" } });
+
+    // const upQty = bukuda.stok_buku - detailker.qty;
+    // await buku.update({ stok_buku: upQty }, { where: { id: detailker.id } });
+    // await keranjang.update({ status: "paid" }, { where: { id_user: iduser, status: "pending" } });
 
     // await detailkeranjang.findOne({ where: { id_keranjang: keranjangUser.id } });
   }
 };
 
-// const updateStatusMidtrans = async (order_id) => {
-//   const url = `https://api.sandbox.midtrans.com/v2/${order_id}/status`;
-//   const options = { method: "GET", headers: { accept: "application/json", authorization: "Basic U0ItTWlkLXNlcnZlci1iSWZWWkVfemp5eDNJWUhUSHpqaTVORVE6" } };
+const updateStatusMidtrans = async (order_id, data) => {
+  const hash = crypto.createHash("sha512").update(`${order_id}${data.status_code}${data.gross_amount}${"SB-Mid-server-bIfVZE_zjyx3IYHTHzji5NEQ"}`).digest("hex");
 
-//   const data = fetch(url, options)
-//     .then((res) => res.json())
-//     .then((data) => {
-//       return data;
-//     });
+  if (data.signature_key !== hash) {
+    return {
+      status: error,
+      message: "Invalid signature key",
+    };
+  }
+  let responeData = null;
+  let transactionStatus = data.transaction_status;
+  let fraudStatus = data.fraud_status;
 
-//   if (data.status_code != 200) {
-//     return {
-//       status: data.statusCode,
-//       message: "status code bukan 200",
-//     };
-//   }
+  if (transactionStatus == "capture") {
+    if (fraudStatus == "accept") {
+      responeData = await keranjang.update({ status: "paid" }, { where: { id: order_id, status: "pending" } });
+      console.log("paid");
+    }
+  } else if (transactionStatus == "settlement") {
+    responeData = await keranjang.update({ status: "paid" }, { where: { id: order_id, status: "pending" } });
+    console.log("paid");
+  } else if (transactionStatus == "cancel" || transactionStatus == "deny" || transactionStatus == "expire") {
+    responeData = await keranjang.update({ status: "cancel" }, { where: { id: order_id, status: "pending" } });
+    console.log("cancel");
+  } else if (transactionStatus == "pending") {
+    console.log("waiting for payment");
+  }
+  return {
+    status: success,
+    data: responeData,
+  };
+};
+exports.notif = async (req, res) => {
+  const data = req.body;
 
-// if (data.signature_key !== verifiykey) {
-//   return {
-//     status: error,
-//     message: "Invalid signature key",
-//   };
-// }
-// let responeData = null;
-// let transactionStatus = data.transaction_status;
-// let fraudStatus = data.fraud_status;
-
-// if (transactionStatus == "capture") {
-//   if (fraudStatus == "accept") {
-//     responeData = await keranjang.update({ status: "paid" }, { where: { id: order_id, status: "pending" } });
-//     console.log("paid");
-//   }
-// } else if (transactionStatus == "settlement") {
-//   responeData = await keranjang.update({ status: "paid" }, { where: { id: order_id, status: "pending" } });
-//   console.log("paid");
-// } else if (transactionStatus == "cancel" || transactionStatus == "deny" || transactionStatus == "expire") {
-//   responeData = await keranjang.update({ status: "cancel" }, { where: { id: order_id, status: "pending" } });
-//   console.log("cancel");
-// } else if (transactionStatus == "pending") {
-//   console.log("waiting for payment");
-// }
-
-exports.notif = async (order_id, data) => {
   await keranjang
     .findOne({
-      where: { order_id: order_id },
+      where: { order_id: data.order_id },
     })
     .then((trans) => {
       if (trans) {
-        updateStatusMidtrans(order_id, data);
+        updateStatusMidtrans(data.order_id, data).then((result) => {
+          console.log("result", result);
+        });
       }
     });
 
