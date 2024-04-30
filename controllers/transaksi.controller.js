@@ -214,9 +214,9 @@ exports.checkout = async (request, response) => {
       // updateStatusMidtrans(order_id);
     });
 
-    // const upQty = bukuda.stok_buku - detailker.qty;
-    // await buku.update({ stok_buku: upQty }, { where: { id: detailker.id } });
-    // await keranjang.update({ status: "paid" }, { where: { id_user: iduser, status: "pending" } });
+    const upQty = bukuda.stok_buku - detailker.qty;
+    await buku.update({ stok_buku: upQty }, { where: { id: detailker.id } });
+    await keranjang.update({ status: "paid" }, { where: { id_user: iduser, status: "pending" } });
 
     // await detailkeranjang.findOne({ where: { id_keranjang: keranjangUser.id } });
   }
