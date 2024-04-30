@@ -16,7 +16,11 @@ const { IsUser, IsAdmin } = require("../middleware/role-validation");
 app.get("/getAll", authorize, bukuController.getAllBuku);
 /** create route to find event
  * using method "GET" and define parameter key for "keyword"
+ *
  */
+
+app.get("/getBukubyKategori", authorize, bukuController.getBukubyKategori);
+
 app.get("/:key", authorize, bukuController.findBuku);
 /** create route to add new event using method "POST" */
 app.post("/add", authorize, IsAdmin, bukuController.addBuku);

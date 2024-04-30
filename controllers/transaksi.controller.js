@@ -1,9 +1,10 @@
-const { Transaction, where } = require("sequelize");
+const { Transaction, where, or } = require("sequelize");
 const user = require("../models/index").user;
 const buku = require("../models/index").buku;
 const keranjang = require(`../models/index`).keranjang;
 const detailkeranjang = require(`../models/index`).detail_keranjang;
 const midCli = require("midtrans-client");
+const cryptohash = require("crypto-js/sha512");
 
 const Op = require(`sequelize`).Op;
 
@@ -11,11 +12,13 @@ exports.addtoKeranjang = async (request, response) => {
   let keranjangData = {
     id_user: request.user.id,
     status: "pending",
+    order_id: `INV-${Math.random(10)}`,
   };
-  console.log(keranjangData.id);
+
   const cekKeranjang = await keranjang.findOne({
     where: { id_user: keranjangData.id_user, status: "pending" },
   });
+
   console.log(cekKeranjang);
   const bukuData = await buku.findOne({
     where: { id: request.body.id_buku },
@@ -35,14 +38,16 @@ exports.addtoKeranjang = async (request, response) => {
       id_keranjang: id_keranjang,
       id_buku: request.body.id_buku,
       qty: request.body.qty,
-      hargaAkhir: request.body.qty * bukuData.harga_buku,
+      total: request.body.qty * bukuData.harga_buku,
     };
     await detailkeranjang.create(detailBeli);
+
+    console.log(detailBeli);
 
     await keranjang.update(
       {
         qty: detailBeli.qty,
-        total: detailBeli.hargaAkhir,
+        total_transaksi: detailBeli.hargaAkhir,
       },
       {
         where: {
@@ -51,6 +56,7 @@ exports.addtoKeranjang = async (request, response) => {
         },
       }
     );
+    await this.hitungAkhir(response, request.user.id);
   } else {
     const id_keranjang = cekKeranjang.id;
 
@@ -73,6 +79,7 @@ exports.addtoKeranjang = async (request, response) => {
           },
         }
       );
+      await this.hitungAkhir(response, request.user.id);
     } else {
       const detailBeli = {
         id_keranjang: id_keranjang,
@@ -81,7 +88,9 @@ exports.addtoKeranjang = async (request, response) => {
         total: request.body.qty * bukuData.harga_buku,
       };
       await detailkeranjang.create(detailBeli);
+      await this.hitungAkhir(response, request.user.id);
     }
+    await this.hitungAkhir(response, request.user.id);
   }
   await this.hitungAkhir(response, request.user.id);
   return response.json({
@@ -148,6 +157,8 @@ exports.checkout = async (request, response) => {
     where: { id_user: iduser, status: "pending" },
   });
 
+  console.log(keranjangUser);
+
   const detailker = await detailkeranjang.findOne({
     where: { id_keranjang: keranjangUser.id },
   });
@@ -170,22 +181,24 @@ exports.checkout = async (request, response) => {
 
     const total = parseInt(keranjangUser.total_transaksi);
 
-    const random = Math.random(10);
+    const order_id = keranjangUser.order_id;
 
     //paymentgateway
     const parameters = {
       transaction_details: {
-        order_id: `INV-${random}`,
+        order_id: order_id,
         gross_amount: total,
       },
       callbacks: {
         success: "https://localhost:3000",
         pending: "https://localhost:3000/pending",
-        failure: "",
+        failure: "https://localhost:3000/keranjang",
       },
     };
 
-    // console.log(snap);
+    console.log(parameters.transaction_details.order_id);
+
+    // built SNAP
     let transactionToken;
     let transactionUrl;
     snap.createTransaction(parameters).then((transaction) => {
@@ -198,23 +211,72 @@ exports.checkout = async (request, response) => {
         redirect_url: transactionUrl,
         message: "checkout berhasil",
       });
+      // updateStatusMidtrans(order_id);
     });
 
-    const upQty = bukuda.stok_buku - detailker.qty;
-    await buku.update({ stok_buku: upQty }, { where: { id: detailker.id } });
-    await keranjang.update({ status: "paid" }, { where: { id_user: iduser, status: "pending" } });
+    // const upQty = bukuda.stok_buku - detailker.qty;
+    // await buku.update({ stok_buku: upQty }, { where: { id: detailker.id } });
+    // await keranjang.update({ status: "paid" }, { where: { id_user: iduser, status: "pending" } });
 
     // await detailkeranjang.findOne({ where: { id_keranjang: keranjangUser.id } });
   }
 };
 
-const updateStatusMidtrans = async (order_id, data) => {};
+// const updateStatusMidtrans = async (order_id) => {
+//   const url = `https://api.sandbox.midtrans.com/v2/${order_id}/status`;
+//   const options = { method: "GET", headers: { accept: "application/json", authorization: "Basic U0ItTWlkLXNlcnZlci1iSWZWWkVfemp5eDNJWUhUSHpqaTVORVE6" } };
 
-exports.notif = async (request, response) => {
-  const data = request.body;
+//   const data = fetch(url, options)
+//     .then((res) => res.json())
+//     .then((data) => {
+//       return data;
+//     });
 
-  response.json({
+//   if (data.status_code != 200) {
+//     return {
+//       status: data.statusCode,
+//       message: "status code bukan 200",
+//     };
+//   }
+
+// if (data.signature_key !== verifiykey) {
+//   return {
+//     status: error,
+//     message: "Invalid signature key",
+//   };
+// }
+// let responeData = null;
+// let transactionStatus = data.transaction_status;
+// let fraudStatus = data.fraud_status;
+
+// if (transactionStatus == "capture") {
+//   if (fraudStatus == "accept") {
+//     responeData = await keranjang.update({ status: "paid" }, { where: { id: order_id, status: "pending" } });
+//     console.log("paid");
+//   }
+// } else if (transactionStatus == "settlement") {
+//   responeData = await keranjang.update({ status: "paid" }, { where: { id: order_id, status: "pending" } });
+//   console.log("paid");
+// } else if (transactionStatus == "cancel" || transactionStatus == "deny" || transactionStatus == "expire") {
+//   responeData = await keranjang.update({ status: "cancel" }, { where: { id: order_id, status: "pending" } });
+//   console.log("cancel");
+// } else if (transactionStatus == "pending") {
+//   console.log("waiting for payment");
+// }
+
+exports.notif = async (order_id, data) => {
+  await keranjang
+    .findOne({
+      where: { order_id: order_id },
+    })
+    .then((trans) => {
+      if (trans) {
+        updateStatusMidtrans(order_id, data);
+      }
+    });
+
+  return {
     status: "success",
     message: "OK",
-  });
+  };
 };

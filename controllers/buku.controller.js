@@ -17,6 +17,19 @@ exports.getAllBuku = async (request, response) => {
   });
 };
 
+exports.getBukubyKategori = async (request, response) => {
+  let kategori = request.body.kategori;
+  /** call findAll() to get all data */
+  let bukus = await bukuModel.findAll({
+    where: { kategori_buku: kategori },
+  });
+  return response.json({
+    success: true,
+    data: bukus,
+    message: `All Bukus have been loaded`,
+  });
+};
+
 /** create function for filter */
 exports.findBuku = async (request, response) => {
   /** define keyword to find data */

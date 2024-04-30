@@ -23,6 +23,9 @@ module.exports = {
       status: {
         type: Sequelize.ENUM("pending", "paid", "cancel"),
       },
+      order_id: {
+        type: Sequelize.STRING,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
