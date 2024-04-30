@@ -21,7 +21,7 @@ app.get("/getAll", authorize, bukuController.getAllBuku);
 
 app.get("/getBukubyKategori", authorize, bukuController.getBukubyKategori);
 
-app.get("/:key", authorize, bukuController.findBuku);
+app.post("/find", authorize, bukuController.findBuku);
 /** create route to add new event using method "POST" */
 app.post("/add", authorize, IsAdmin, bukuController.addBuku);
 /** create route to update event

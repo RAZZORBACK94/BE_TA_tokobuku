@@ -33,7 +33,7 @@ exports.getBukubyKategori = async (request, response) => {
 /** create function for filter */
 exports.findBuku = async (request, response) => {
   /** define keyword to find data */
-  let keyword = request.params.key;
+  let keyword = request.body.keyword;
   /** call findAll() within where clause and operation
    * to find data based on keyword */
   let bukus = await bukuModel.findAll({
